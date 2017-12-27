@@ -4,12 +4,13 @@ import scala.collection.immutable.Stack
 
 object Main {
   def main(args: Array[String]) {
-    println("Pascal's Triangle")
-    for (row <- 0 to 10) {
-      for (col <- 0 to row)
-        print(pascal(col, row) + " ")
-      println()
-    }
+//    println("Pascal's Triangle")
+//    for (row <- 0 to 10) {
+//      for (col <- 0 to row)
+//        print(pascal(col, row) + " ")
+//      println()
+//    }
+    println(countChange(301,List(5,10,20,50,100,200,500)))
   }
 
   /**
@@ -58,5 +59,9 @@ object Main {
   /**
    * Exercise 3
    */
-    def countChange(money: Int, coins: List[Int]): Int = ???
+    def countChange(money: Int, coins: List[Int]): Int = {
+      if(money==0) 1
+      else if(coins.size==0 || money <0) 0
+      else countChange(money-coins.last,coins) + countChange(money,coins.init)
+    }
   }
