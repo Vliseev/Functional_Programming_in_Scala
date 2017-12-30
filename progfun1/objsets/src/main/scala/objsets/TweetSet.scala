@@ -88,7 +88,7 @@ abstract class TweetSet {
    */
     def descendingByRetweet: TweetList = {
       def desc_recursion(set: TweetSet, list: TweetList):TweetList={
-        if(set.isEmpty) list
+        if(set.isInstanceOf[Empty]) list
         else{
           val max_tweet: Tweet = set.mostRetweeted
           desc_recursion(set.remove(max_tweet),new Cons(max_tweet,list))
@@ -125,7 +125,6 @@ abstract class TweetSet {
    */
   def foreach(f: Tweet => Unit): Unit
 
-  def isEmpty: Boolean
 }
 
 class Empty extends TweetSet {
@@ -143,8 +142,6 @@ class Empty extends TweetSet {
 
   def foreach(f: Tweet => Unit): Unit = ()
 
-  def isEmpty: Boolean =true
-
   def mostRetweeted = throw new java.util.NoSuchElementException
 }
 
@@ -157,7 +154,6 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
       right_acc
     }
 
-  def isEmpty: Boolean =false
   /**
    * The following methods are already implemented
    */
@@ -185,10 +181,10 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
   }
 
   def mostRetweeted = {
-    def maxRetweet(el1: Tweet,el2: Tweet) = if(el1<el2) el2 else el2
-    if(left.isEmpty && right.isEmpty) elem
-    else if (left.isEmpty) maxRetweet(elem,right.mostRetweeted)
-    else if (right.isEmpty) maxRetweet(elem,left.mostRetweeted)
+    def maxRetweet(el1: Tweet,el2: Tweet) = if(el1<el2) el1 else el2
+    if(left.isInstanceOf[Empty] && right.isInstanceOf[Empty]) elem
+    else if (left.isInstanceOf[Empty]) maxRetweet(elem,right.mostRetweeted)
+    else if (right.isInstanceOf[Empty]) maxRetweet(elem,left.mostRetweeted)
     else maxRetweet(maxRetweet(left.mostRetweeted,elem),right.mostRetweeted)
   }
 }
@@ -219,30 +215,19 @@ object GoogleVsApple {
   val google = List("android", "Android", "galaxy", "Galaxy", "nexus", "Nexus")
   val apple = List("ios", "iOS", "iphone", "iPhone", "ipad", "iPad")
 
-  lazy val googleTweets: TweetSet = ???
-  lazy val appleTweets: TweetSet = ???
+  lazy val googleTweets: TweetSet = TweetReader.allTweets.filter(tweet => google.exists(str => tweet.text.contains(str)))
+  lazy val appleTweets: TweetSet = TweetReader.allTweets.filter(tweet => apple.exists(str => tweet.text.contains(str)))
   
   /**
    * A list of all tweets mentioning a keyword from either apple or google,
    * sorted by the number of retweets.
    */
-     lazy val trending: TweetList = ???
+     lazy val trending: TweetList = (googleTweets union appleTweets) descendingByRetweet
   }
 
 object Main extends App {
 
-    val set1 = new Empty
-    val set2 = set1.incl(new Tweet("a", "a body", 20))
-    val set3 = set2.incl(new Tweet("b", "b body", 3))
-    val c = new Tweet("c", "c body", 7)
-    val d = new Tweet("d", "d body", 9)
-    val set4c = set3.incl(c)
-    val set4d = set3.incl(d)
-    val set5 = set4c.incl(d)
-
-    set5.foreach(el=>println(el.retweets))
-    println("-----------")
-    println(set5.descendingByRetweet.foreach(el=>println(el.retweets)))
+    GoogleVsApple.trending.foreach(println)
 
   // Print the trending tweets
 //  GoogleVsApple.trending foreach println
